@@ -1,8 +1,11 @@
 /**
  * Pantalla de Chats
  */
-import { StyleSheet, View, Text, Image, FlatList } from 'react-native';
-
+import { StyleSheet, View, Text, Image, TouchableOpacity, FlatList } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { RootStackParamList } from '../App';
+import { readFile, DocumentDirectoryPath } from '@dr.pogodin/react-native-fs';
 
 var contacts = [
     {
@@ -31,9 +34,13 @@ var contacts = [
     }
 ]
 
-function Contact(contact: any) {
+function Contact(contact: any, navigation: NativeStackNavigationProp<RootStackParamList>) {
+  const ContactPress = () => {
+    navigation.navigate('Chat')
+  }; 
+
   return (
-    <View style={styles.contactContainer}>
+    <TouchableOpacity style={styles.contactContainer} onPress={ContactPress}>
       <Image style={styles.contactPhoto} source={contact.image} />
       <View style={styles.infoContainer}>
         <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
@@ -41,25 +48,36 @@ function Contact(contact: any) {
         </View> 
         <Text style={{ fontSize: 12 }}>{contact.last_message}</Text>
       </View>
-      <Text style={{marginTop: 10, marginRight: 18}}>{contact.time}</Text>
-    </View>
+      <Text style={{marginTop: 10, marginRight: 18, fontSize: 11}}>{contact.time}</Text>
+    </TouchableOpacity>
   );
 }
 
+
+
 export default function Chats() {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const loginFilePath: string = DocumentDirectoryPath + '/login.txt';
+
+  // Verificar si el archivo no existe
+  readFile(loginFilePath, 'utf8').catch((error) => {
+    console.log("Archivo de login no existe");
+
+    // Ir a login
+    navigation.navigate('Login')
+  });
+  
   return (
     <View style={styles.container}>
-      <Text style={{ padding: 65, fontSize: 30 }}>Chat Rooms</Text>
+      <Text style={{ padding: 40, fontSize: 30 }}>Chat Rooms</Text>
       <FlatList
         data={contacts}
         ItemSeparatorComponent={() => <View style={{ height: 16 }} />}
-        renderItem={({item}) => Contact(item) }
+        renderItem={({item}) => Contact(item, navigation) }
       />
     </View>
   );
 }
-
-
 
 const styles = StyleSheet.create({
   container: {
