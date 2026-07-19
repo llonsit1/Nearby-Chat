@@ -3,8 +3,21 @@ import { Text, View, TextInput, StyleSheet, Button } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../App';
+import { writeFile, DocumentDirectoryPath } from '@dr.pogodin/react-native-fs';
 
 
+function writeLoginFile(name: string) {
+    var path = DocumentDirectoryPath + '/login.txt';
+    console.log("User name: ", name)
+    // write the file
+    writeFile(path, name, 'utf8')
+        .then((success) => {
+            console.log('FILE WRITTEN!');
+        })
+        .catch((err) => {
+            console.log(err.message);
+        });
+}
 
 const Login = () => {
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -39,14 +52,15 @@ const Login = () => {
                 value={contrasena}
                 onChangeText={setContrasena}
             />
-             <Button 
+            <Button
                 title="Iniciar sesión"
                 onPress={() => {
                     const exito = verificarUsuario();
                     if (exito) {
+                        writeLoginFile(usuario)
                         navigation.navigate('Chats');
                     }
-                }} 
+                }}
             />
 
             {mensaje !== '' && <Text style={styles.Text}>{mensaje}</Text>}
