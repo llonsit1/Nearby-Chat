@@ -12,7 +12,7 @@ function writeLoginFile(name: string) {
     // write the file
     writeFile(path, name, 'utf8')
         .then((success) => {
-            console.log('FILE WRITTEN!');
+            console.log(success + 'FILE WRITTEN!');
         })
         .catch((err) => {
             console.log(err.message);

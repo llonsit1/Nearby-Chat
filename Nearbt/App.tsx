@@ -1,6 +1,7 @@
 import { createStaticNavigation } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import AddChat from './Screens/AddChath';
 import Login from './Screens/Login';
 import Chats from './Screens/Chats';
 import Chat from './Screens/Chat';
@@ -12,6 +13,7 @@ export type RootStackParamList = {
   Chats: undefined;
   Chat: undefined;
   Test: undefined;
+  AddChath: undefined;
 };
 
 const RootStack = createNativeStackNavigator({
@@ -33,7 +35,12 @@ const RootStack = createNativeStackNavigator({
     Test: {
       screen: Test,
       options: { title: 'Testing' }
-    }
+    },
+    AddChath: {
+      screen: AddChat,
+      options: { title: 'Add Chat' }
+    },
+    
   },
 });
 

@@ -7,6 +7,8 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../App';
 import { readFile, DocumentDirectoryPath } from '@dr.pogodin/react-native-fs';
 
+
+
 var contacts = [
     {
         "image": require("../images/forest.jpg"),
@@ -43,12 +45,12 @@ function Contact(contact: any, navigation: NativeStackNavigationProp<RootStackPa
     <TouchableOpacity style={styles.contactContainer} onPress={ContactPress}>
       <Image style={styles.contactPhoto} source={contact.image} />
       <View style={styles.infoContainer}>
-        <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between'}}>
           <Text style={{ fontSize: 17, fontWeight: 'bold' }}>{contact.name}</Text>
         </View> 
         <Text style={{ fontSize: 12 }}>{contact.last_message}</Text>
       </View>
-      <Text style={{marginTop: 10, marginRight: 18, fontSize: 11}}>{contact.time}</Text>
+      <Text style={{ marginTop: 10, marginRight: 18, fontSize: 11}}>{contact.time}</Text>
     </TouchableOpacity>
   );
 }
@@ -61,12 +63,15 @@ export default function Chats() {
 
   // Verificar si el archivo no existe
   readFile(loginFilePath, 'utf8').catch((error) => {
-    console.log("Archivo de login no existe");
+    console.log(error + "Archivo de login no existe");
 
     // Ir a login
     navigation.navigate('Login')
   });
-  
+
+  function ButtonAddCaht () {
+  navigation.navigate('AddChath');   
+}
   return (
     <View style={styles.container}>
       <Text style={{ padding: 40, fontSize: 30 }}>Chat Rooms</Text>
@@ -75,6 +80,11 @@ export default function Chats() {
         ItemSeparatorComponent={() => <View style={{ height: 16 }} />}
         renderItem={({item}) => Contact(item, navigation) }
       />
+      <View style={{ position: 'absolute', bottom: 20, right: 20 }}>
+        <TouchableOpacity style={styles.addButton} onPress={ButtonAddCaht}>
+            <Text style={{ fontSize: 30, color: 'white' }}>+</Text>
+        </TouchableOpacity>
+    </View>
     </View>
   );
 }
@@ -98,6 +108,15 @@ const styles = StyleSheet.create({
     marginTop: 8,
     flex: 1,
     gap: 5,
-  }
+  },
+  addButton: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#3498DB',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
 });
 

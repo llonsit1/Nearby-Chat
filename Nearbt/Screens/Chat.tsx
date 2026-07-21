@@ -1,6 +1,6 @@
 import MaterialIcons from '@react-native-vector-icons/material-icons';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, } from 'react-native'
+import {  } from 'react-native-safe-area-context';
 import { KeyboardStickyView, KeyboardChatScrollView } from 'react-native-keyboard-controller'
 
 // Burbuja de la izquierda
@@ -21,6 +21,7 @@ function RightBubble() {
             </View>
         </View>)
 }
+
 
 export default function Chat() {
     return (
