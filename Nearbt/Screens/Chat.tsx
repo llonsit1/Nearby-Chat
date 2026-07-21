@@ -1,40 +1,154 @@
 import MaterialIcons from '@react-native-vector-icons/material-icons';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, } from 'react-native'
-import {  } from 'react-native-safe-area-context';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Image } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { KeyboardStickyView, KeyboardChatScrollView } from 'react-native-keyboard-controller'
+import { useEffect, useRef, useState } from 'react';
+import { pick } from '@react-native-documents/picker'
+
+type FileMetadata = {
+    extension: string;
+    name: string;
+    size: number;
+    uri: string;
+    mime: string
+};
+
+type Message = {
+    id: string;
+    date: string;
+    sender: boolean;
+    text: string;
+    fileMetadata?: FileMetadata;
+};
+
+function getFileExtension(filename: string): string {
+    const parts = filename.split('.');
+
+    if (parts.length <= 1) {
+        return '';
+    }
+
+    return parts.pop()!.toLowerCase();
+}
 
 // Burbuja de la izquierda
-function LeftBubble() {
+function LeftBubble(item: Message) {
     return (
         <View style={styles.leftBubbleContainer}>
             <View style={styles.leftBubbleTextContainer}>
-                <Text>lorem ipsum</Text>
+                <Text>text</Text>
             </View>
-        </View>)
+        </View>);
 }
 
-function RightBubble() {
+
+// Burbuja para enviar mensajes sin archivos
+function RightBubbleWithNoAttachment(item: Message) {
     return (
-        <View style={styles.rightBubbleContainer}>
+        <View key={item.id} style={styles.rightBubbleContainer}>
             <View style={styles.rightBubbleTextContainer}>
-                <Text>lorem ipsum</Text>
+                <Text>{item.text}</Text>
             </View>
-        </View>)
+        </View>);
 }
 
+function RightBubble(item: Message) {
+    if (item.fileMetadata == undefined) {
+        return RightBubbleWithNoAttachment(item);
+    }
+
+    switch (item.fileMetadata.extension) {
+        case "jpg":
+        case "png":
+            return (
+                <View key={item.id} style={styles.rightBubbleContainer}>
+                    <View style={styles.rightBubbleTextContainer}>
+                        <Image
+                            style={{ height: 200, width: 200 }}
+                            source={require('../images/beach.jpg')}
+                        />
+                        <Text>{item.text}</Text>
+                    </View>
+                </View>)
+        default:
+            return (
+                <View key={item.id} style={styles.rightBubbleContainer}>
+                    <View style={styles.rightBubbleTextContainer}>
+                        <View style={styles.fileContainer}>
+                            <MaterialIcons name="file-copy" size={30} color="#dddddd" style={styles.icon} />
+                            <View style={styles.fileInfoContainer}>
+                                <Text>Chat.bin</Text>
+                                <Text>2.0 MB</Text>
+                            </View>
+                        </View>
+                        <Text>{item.text}</Text>
+                    </View>
+                </View>)
+    }
+}
 
 export default function Chat() {
+    const [leftMessages, setLeftMessages] = useState<Message[]>([]);
+    const [rightMessages, setRightMessages] = useState<Message[]>([]);
+    const [messageText, setmessageText] = useState('');
+    const [attachCount, setAttachCount] = useState(0);
+    const [pendingAttachment, setPendingAttachment] = useState<FileMetadata | undefined>(undefined);
+
+ 
+    const sendMessage = () => {
+        if (messageText.trim().length === 0 || (messageText.trim().length === 0 && pendingAttachment === undefined)) {
+            return;
+        }
+
+        const newMessage: Message = {
+            id: Date.now().toString(),
+            text: messageText,
+            date: new Date().toISOString(),
+            sender: true,
+            fileMetadata: pendingAttachment,
+        };
+
+        setRightMessages(prev => [...prev, newMessage]);
+        setmessageText("");
+        setPendingAttachment(undefined);
+    };
+
+    const onFileAttachmentPress = async () => {
+        // open file picker...
+
+        try {
+            const [result] = await pick({
+                mode: 'open',
+            })
+            console.log(result)
+            const name: string = result.name != undefined ? result.name : ""
+            const extesion: string = getFileExtension(name)
+            const size: number = result.size != undefined ? result.size : 0
+            const uri: string = result.uri != undefined ? result.uri : ""
+            const mime: string = result.type != undefined ? result.type : ""
+            setPendingAttachment({
+                extension: extesion,
+                name: name,
+                size: size,
+                uri: uri,
+                mime: mime
+            });
+
+            // Por ahora solo podemos adjuntar un archivo
+            setAttachCount(1);
+        } catch (err) {
+            // see error handling
+        }
+
+    };
     return (
         <View style={{ flex: 1 }}>
             <KeyboardChatScrollView style={{ flex: 1 }}>
                 <View style={styles.chatBubblesContainer}>
-                    <Text style={{ marginTop: 36, textAlign: 'center' }}>July 18 2026</Text>
-                    <LeftBubble />
-                    <RightBubble />
-                    <LeftBubble />
-                    <RightBubble />
-                    <LeftBubble />
-                    <RightBubble />
+                    <Text style={{ marginTop: 36, marginBottom: 15, textAlign: 'center' }}>July 18 2026</Text>
+                    {leftMessages.map((item: Message) => LeftBubble(item))}
+                    {rightMessages.map((item: Message) => RightBubble(item))}
+
                 </View>
             </KeyboardChatScrollView>
 
@@ -42,11 +156,17 @@ export default function Chat() {
                 <TextInput
                     style={styles.messageTextInput}
                     placeholder="Enter Message"
+                    value={messageText}
+                    onChangeText={(text) => setmessageText(text)}
                 />
-                <TouchableOpacity style={styles.attachFileButton}>
-                    <MaterialIcons name="attach-file" size={24} color="#3498DB" />
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.sendIconButton}>
+                <View style={{ flexDirection: 'row' }}>
+                    <TouchableOpacity style={styles.attachFileButton} onPress={onFileAttachmentPress}>
+                        <MaterialIcons name="attach-file" size={24} color="#3498DB" />
+                    </TouchableOpacity>
+
+                    <Text>{attachCount != 0 ? attachCount : ""}</Text>
+                </View>
+                <TouchableOpacity style={styles.sendIconButton} onPress={sendMessage}>
                     <MaterialIcons name="send" size={24} color="#3498DB" />
                 </TouchableOpacity>
             </KeyboardStickyView>
@@ -54,6 +174,7 @@ export default function Chat() {
 
     );
 }
+
 const styles = StyleSheet.create({
     chatContainer: {
 
@@ -86,7 +207,8 @@ const styles = StyleSheet.create({
         marginLeft: 10,
         marginRight: 10,
         marginTop: 10,
-        marginBottom: 10
+        marginBottom: 10,
+        flexDirection: 'column'
     },
     messageTextInputContainer: {
         justifyContent: 'flex-start',
@@ -116,6 +238,24 @@ const styles = StyleSheet.create({
     },
     attachFileButton: {
         marginRight: 5
+    },
+    fileContainer: {
+        flexDirection: 'row',
+        backgroundColor: '#8a8282',
+        borderRadius: 12,
+        gap: 10,
+    },
+    fileInfoContainer: {
+        flexDirection: 'column',
+        gap: 10,
+        marginRight: 10,
+        marginLeft: 10,
+        marginTop: 10,
+        marginBottom: 10
+    },
+    icon: {
+        marginTop: 10,
+        marginLeft: 10
     }
 });
 
