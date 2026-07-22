@@ -18,6 +18,7 @@ type Message = {
     date: string;
     sender: boolean;
     text: string;
+    incoming: boolean;
     fileMetadata?: FileMetadata;
 };
 
@@ -31,38 +32,28 @@ function getFileExtension(filename: string): string {
     return parts.pop()!.toLowerCase();
 }
 
-// Burbuja de la izquierda
-function LeftBubble(item: Message) {
-    return (
-        <View style={styles.leftBubbleContainer}>
-            <View style={styles.leftBubbleTextContainer}>
-                <Text>text</Text>
-            </View>
-        </View>);
-}
 
+function Bubble(item: Message) {
+    // Decidir si los mensajes van a la izquierda o a la derecha basado en la propiedad de "Message" "incoming"
+    const bubbleContainer = item.incoming ? styles.leftBubbleContainer : styles.rightBubbleContainer
+    const bubbleTextContainer = item.incoming ? styles.leftBubbleTextContainer : styles.rightBubbleTextContainer
 
-// Burbuja para enviar mensajes sin archivos
-function RightBubbleWithNoAttachment(item: Message) {
-    return (
-        <View key={item.id} style={styles.rightBubbleContainer}>
-            <View style={styles.rightBubbleTextContainer}>
-                <Text>{item.text}</Text>
-            </View>
-        </View>);
-}
-
-function RightBubble(item: Message) {
     if (item.fileMetadata == undefined) {
-        return RightBubbleWithNoAttachment(item);
+        return (
+            <View key={item.id} style={bubbleContainer}>
+                <View style={bubbleTextContainer}>
+                    <Text>{item.text}</Text>
+                </View>
+            </View>
+        );
     }
 
     switch (item.fileMetadata.extension) {
         case "jpg":
         case "png":
             return (
-                <View key={item.id} style={styles.rightBubbleContainer}>
-                    <View style={styles.rightBubbleTextContainer}>
+                <View key={item.id} style={bubbleContainer}>
+                    <View style={bubbleTextContainer}>
                         <Image
                             style={{ height: 200, width: 200 }}
                             source={require('../images/beach.jpg')}
@@ -72,8 +63,8 @@ function RightBubble(item: Message) {
                 </View>)
         default:
             return (
-                <View key={item.id} style={styles.rightBubbleContainer}>
-                    <View style={styles.rightBubbleTextContainer}>
+                <View key={item.id} style={bubbleContainer}>
+                    <View style={bubbleTextContainer}>
                         <View style={styles.fileContainer}>
                             <MaterialIcons name="file-copy" size={30} color="#dddddd" style={styles.icon} />
                             <View style={styles.fileInfoContainer}>
@@ -88,13 +79,28 @@ function RightBubble(item: Message) {
 }
 
 export default function Chat() {
-    const [leftMessages, setLeftMessages] = useState<Message[]>([]);
-    const [rightMessages, setRightMessages] = useState<Message[]>([]);
+    const [messages, setMessages] = useState<Message[]>([]);
     const [messageText, setmessageText] = useState('');
     const [attachCount, setAttachCount] = useState(0);
     const [pendingAttachment, setPendingAttachment] = useState<FileMetadata | undefined>(undefined);
+    const ws = useRef<WebSocket | null>(null);
 
- 
+    useEffect(() => {
+        ws.current = new WebSocket('ws://192.168.1.19:3000');
+
+        ws.current.onopen = () => console.log('WS connected');
+        ws.current.onmessage = (event) => {
+            const incoming: Message = JSON.parse(event.data);
+            // TODO: El servidor es el que debe decidir esto, no el cliente
+            incoming.incoming = true;
+            setMessages(prev => [...prev, incoming]);
+        };
+        ws.current.onerror = (e) => console.error('WS error ', e.message);
+        ws.current.onclose = (e) => { console.log('WS closed ', e.reason) };
+
+        return () => ws.current?.close();
+    }, []);
+
     const sendMessage = () => {
         if (messageText.trim().length === 0 || (messageText.trim().length === 0 && pendingAttachment === undefined)) {
             return;
@@ -105,11 +111,14 @@ export default function Chat() {
             text: messageText,
             date: new Date().toISOString(),
             sender: true,
+            incoming: false,
             fileMetadata: pendingAttachment,
         };
 
-        setRightMessages(prev => [...prev, newMessage]);
+        setMessages(prev => [...prev, newMessage]);
         setmessageText("");
+        console.log(JSON.stringify(newMessage))
+        ws.current?.send(JSON.stringify(newMessage));
         setPendingAttachment(undefined);
     };
 
@@ -146,8 +155,7 @@ export default function Chat() {
             <KeyboardChatScrollView style={{ flex: 1 }}>
                 <View style={styles.chatBubblesContainer}>
                     <Text style={{ marginTop: 36, marginBottom: 15, textAlign: 'center' }}>July 18 2026</Text>
-                    {leftMessages.map((item: Message) => LeftBubble(item))}
-                    {rightMessages.map((item: Message) => RightBubble(item))}
+                    {messages.map((item: Message) => Bubble(item))}
 
                 </View>
             </KeyboardChatScrollView>

@@ -38,7 +38,7 @@ var contacts = [
 
 function Contact(contact: any, navigation: NativeStackNavigationProp<RootStackParamList>) {
   const ContactPress = () => {
-    navigation.navigate('Chat')
+    navigation.navigate('Chat', {chatImage: contact.image, chatName: contact.name})
   }; 
 
   return (

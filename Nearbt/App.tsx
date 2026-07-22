@@ -6,12 +6,18 @@ import Login from './Screens/Login';
 import Chats from './Screens/Chats';
 import Chat from './Screens/Chat';
 import Test from './Screens/Test';
+import ChatHeader from './Components/ChatHeader'
 import { KeyboardProvider } from "react-native-keyboard-controller";
+
+type ChatParams = {
+  chatName: string;
+  chatImage: any;
+}
 
 export type RootStackParamList = {
   Login: undefined;
   Chats: undefined;
-  Chat: undefined;
+  Chat: ChatParams;
   Test: undefined;
   AddChath: undefined;
 };
@@ -28,9 +34,13 @@ const RootStack = createNativeStackNavigator({
       screen: Login,
       options: { title: 'Bienvenido' },
     },
-    Chat: {
+     Chat: {
       screen: Chat,
-      options: { title: 'Chat', navigationBarHidden: true }
+      options: ({ route }) => ({
+        title: 'Chat',
+        navigationBarHidden: true,
+        headerTitle: (props) => ChatHeader(props, route.params),
+      }),
     },
     Test: {
       screen: Test,
@@ -54,4 +64,10 @@ export default function App() {
       </SafeAreaProvider>
     </KeyboardProvider>
   );
+}
+
+declare global {
+  namespace ReactNavigation {
+    interface RootParamList extends RootStackParamList {}
+  }
 }
