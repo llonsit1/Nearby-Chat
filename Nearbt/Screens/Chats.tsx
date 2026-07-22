@@ -14,7 +14,7 @@ var contacts = [
         "image": require("../images/forest.jpg"),
         "name": "Chat #1",
         "last_message": "Are you still coming today?",
-        "time": "8:42 AM"
+        "time": "8:42 AM",
     },
     {
         "image": require("../images/city.jpg"),

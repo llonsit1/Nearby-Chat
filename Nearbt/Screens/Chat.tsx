@@ -5,6 +5,14 @@ import { KeyboardStickyView, KeyboardChatScrollView } from 'react-native-keyboar
 import { useEffect, useRef, useState } from 'react';
 import { pick } from '@react-native-documents/picker'
 
+
+/* 
+* Para usar el servidor, por ahora hay que cambiar estos valores manualmente
+* Pronto, estos valores se van a llenar usando ParamList de react navigation
+*/
+const IP = "192.168.1.19"
+const PORT = 3000
+
 type FileMetadata = {
     extension: string;
     name: string;
@@ -86,7 +94,7 @@ export default function Chat() {
     const ws = useRef<WebSocket | null>(null);
 
     useEffect(() => {
-        ws.current = new WebSocket('ws://192.168.1.19:3000');
+        ws.current = new WebSocket("ws://" + IP + ":" + PORT);
 
         ws.current.onopen = () => console.log('WS connected');
         ws.current.onmessage = (event) => {
