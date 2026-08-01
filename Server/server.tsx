@@ -1,6 +1,7 @@
 import express, { type Express, type Request, type Response } from 'express';
 import multer from 'multer';
 import path from 'path';
+import { networkInterfaces } from 'os';
 
 const http = require("http");
 const WebSocket = require("ws");
@@ -11,6 +12,22 @@ app.use(express.json());
 const server = http.createServer(app);
 
 const wss = new WebSocket.Server({ server });
+
+const WS_PORT = 3000;
+
+function getLocalIpAddress() {
+  const interfaces = networkInterfaces();
+  for (const name of Object.keys(interfaces)) {
+    if (interfaces[name] === undefined) {
+        continue;
+    }
+    for (const netInterface of interfaces[name]) {
+      if (netInterface.family === 'IPv4' && !netInterface.internal) return netInterface.address;
+    }
+  }
+  return '127.0.0.1';
+}
+
 
 const storage = multer.diskStorage({
     destination: "./uploads",
@@ -70,6 +87,8 @@ wss.on("connection", (ws) => {
     });
 });
 
-server.listen(3000, () => {
-    console.log("Listening");
+server.listen(WS_PORT, () => {
+    console.log("Servidor creado");
+    console.log("IP: ", getLocalIpAddress())
+    console.log("Port: ", WS_PORT);
 });
