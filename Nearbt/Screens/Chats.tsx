@@ -7,8 +7,6 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../App';
 import { readFile, DocumentDirectoryPath } from '@dr.pogodin/react-native-fs';
 
-
-
 var contacts = [
     {
         "image": require("../images/forest.jpg"),
@@ -55,8 +53,6 @@ function Contact(contact: any, navigation: NativeStackNavigationProp<RootStackPa
   );
 }
 
-
-
 export default function Chats() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const loginFilePath: string = DocumentDirectoryPath + '/login.txt';
@@ -69,9 +65,9 @@ export default function Chats() {
     navigation.navigate('Login')
   });
 
-  function ButtonAddCaht () {
-  navigation.navigate('AddChath');   
-}
+  function ButtonAddCaht() {
+    navigation.navigate('AddChath');
+  }
   return (
     <View style={styles.container}>
       <Text style={{ padding: 40, fontSize: 30 }}>Chat Rooms</Text>

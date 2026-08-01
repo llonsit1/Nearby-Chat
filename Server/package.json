@@ -1,25 +1,21 @@
 {
-  "name": "server",
+  "name": "server1",
   "version": "1.0.0",
   "description": "",
-  "main": "server.js",
+  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "type": "commonjs",
   "dependencies": {
-    "cors": "^2.8.6",
     "express": "^5.2.1",
     "multer": "^2.2.0",
     "ws": "^8.21.1"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
-    "@types/multer": "^2.2.0",
-    "@types/node": "^26.1.1",
-    "@types/ws": "^8.18.1",
-    "ts-node": "^10.9.2",
+    "@types/node": "^26.1.2",
     "typescript": "^7.0.2"
   }
 }
